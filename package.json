@@ -6,16 +6,29 @@
   "type": "module",
   "scripts": {
     "start": "npx cross-env NODE_ENV=production node src/app.js",
-    "dev": "nodemon src/app"
+    "dev": "nodemon src/app",
+    "format": "prettier --write src/**/*.js",
+    "lint": "eslint src//*.js",
+    "lint:fix": "eslint src/**/*.js --fix"
   },
   "author": "Muhammed Mustafa",
   "license": "MIT",
   "dependencies": {
     "colors": "^1.4.0",
     "dotenv": "^16.0.3",
+    "eslint": "^8.39.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.32.2",
     "express": "^4.18.2",
+    "express-async-handler": "^1.2.0",
     "mongoose": "^7.1.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "prettier": "^2.8.8"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
