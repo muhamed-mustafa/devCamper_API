@@ -5,7 +5,7 @@ import {
   createBootCamp,
   updateBootCamp,
   deleteBootCamp,
-} from '../controllers/bootcamps.js';
+} from '../controllers/bootcamp.js';
 
 const router = Router();
 
