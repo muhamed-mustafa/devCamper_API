@@ -1,5 +1,6 @@
-import asyncHandler from "express-async-handler";
-import { BootCamp } from "../models/bootcamp.js";
+import asyncHandler from 'express-async-handler';
+import { BootCamp } from '../models/bootcamp.js';
+import { ErrorResponse } from '../utils/errorResponse.js';
 
 // @desc      Get all bootCamps
 // @route     GET /api/v1/bootCamps
@@ -14,12 +15,14 @@ const getBootCamps = asyncHandler(async (req, res) => {
 // @desc      Get single bootCamp
 // @route     GET /api/v1/bootCamps/:id
 // @access    Public
-const getBootCamp = asyncHandler(async (req, res) => {
+const getBootCamp = asyncHandler(async (req, res, next) => {
   let { id } = req.params;
   const bootCamp = await BootCamp.findById(id);
 
   if (!bootCamp) {
-    return res.status(400).json({ success: false });
+    return next(
+      new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
   }
 
   res.status(200).json({ success: true, data: bootCamp });
@@ -36,7 +39,7 @@ const createBootCamp = asyncHandler(async (req, res) => {
 // @desc      Update bootCamp
 // @route     PUT /api/v1/bootCamps/:id
 // @access    Private
-const updateBootCamp = asyncHandler(async (req, res) => {
+const updateBootCamp = asyncHandler(async (req, res, next) => {
   let { id } = req.params;
 
   const bootCamp = await BootCamp.findByIdAndUpdate(id, req.body, {
@@ -45,7 +48,9 @@ const updateBootCamp = asyncHandler(async (req, res) => {
   });
 
   if (!bootCamp) {
-    return res.status(400).json({ success: false });
+    return next(
+      new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
   }
 
   res.status(200).json({ success: true, data: bootCamp });
@@ -54,13 +59,15 @@ const updateBootCamp = asyncHandler(async (req, res) => {
 // @desc      Delete bootCamp
 // @route     DELETE /api/v1/bootCamps/:id
 // @access    Private
-const deleteBootCamp = asyncHandler(async (req, res) => {
+const deleteBootCamp = asyncHandler(async (req, res, next) => {
   let { id } = req.params;
 
   const bootCamp = await BootCamp.findByIdAndDelete(id);
 
   if (!bootCamp) {
-    return res.status(400).json({ success: false });
+    return next(
+      new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
   }
 
   res.status(200).json({ success: true, data: {} });

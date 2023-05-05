@@ -11,7 +11,7 @@
       "prettier"
   ],
   "rules": {
-      "quotes": ["error", "single","doublequote"],
+      "quotes": ["error", "single"],
       "no-var": "error",
       "no-empty": "off",
       "spaced-comment": "off",
