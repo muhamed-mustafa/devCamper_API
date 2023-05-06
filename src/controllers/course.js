@@ -9,7 +9,7 @@ import { Course } from '../models/course.js';
 const getCourses = asyncHandler(async (req, res) => {
   const courses = await Course.find({
     ...(req.params.bootcampId && { bootcamp: req.params.bootcampId }),
-  });
+  }).populate({ path: 'bootcamp', select: 'name description' });
 
   res.status(200).json({
     success: true,
