@@ -116,7 +116,9 @@ const BootCampSchema = new Schema(
       transform(doc, ret) {
         (ret.id = ret._id), delete ret._id;
       },
+      virtuals: true,
     },
+    toObject: { virtuals: true },
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
   }
 );
@@ -142,6 +144,21 @@ BootCampSchema.pre('save', async function (next) {
 
   this.address = undefined;
   next();
+});
+
+// Cascade delete courses when a bootcamp is deleted
+BootCampSchema.pre('deleteOne', { document: true }, async function (next) {
+  console.log(`Courses being deleted from bootcamp ${this._id}`);
+  await this.model('Course').deleteMany({ bootcamp: this._id });
+  next();
+});
+
+// Reverse populate with virtuals
+BootCampSchema.virtual('courses', {
+  ref: 'Course',
+  localField: '_id',
+  foreignField: 'bootcamp',
+  justOne: false,
 });
 
 export const BootCamp = model('BootCamp', BootCampSchema);
