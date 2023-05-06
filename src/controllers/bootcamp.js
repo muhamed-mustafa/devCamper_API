@@ -169,6 +169,16 @@ const getBootcampsInRadius = asyncHandler(async (req, res) => {
   });
 });
 
+const getSingleBootCamp = async (id) => {
+  const bootCamp = await BootCamp.findById(id);
+
+  if (!bootCamp) {
+    throw new ErrorResponse(`Bootcamp not found with id of ${id}`, 404);
+  }
+
+  return bootCamp;
+};
+
 export {
   getBootCamps,
   getBootCamp,
@@ -176,4 +186,5 @@ export {
   updateBootCamp,
   deleteBootCamp,
   getBootcampsInRadius,
+  getSingleBootCamp,
 };
