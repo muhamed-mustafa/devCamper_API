@@ -10,6 +10,8 @@ import {
 } from '../controllers/bootcamp.js';
 import { courseRoute } from './course.js';
 import { uploadFile } from '../middleware/file-upload.js';
+import { advancedResults } from '../middleware/advancedResults.js';
+import { BootCamp } from '../models/bootcamp.js';
 
 const router = Router();
 
@@ -19,7 +21,10 @@ router.use('/:bootcampId/courses', courseRoute);
 router.route('/:id/photo').put(uploadFile, bootcampPhotoUpload);
 
 router.route('/radius/:zipcode/:distance').get(getBootcampsInRadius);
-router.route('/').get(getBootCamps).post(createBootCamp);
+router
+  .route('/')
+  .get(advancedResults(BootCamp, 'courses'), getBootCamps)
+  .post(createBootCamp);
 router
   .route('/:id')
   .get(getBootCamp)
