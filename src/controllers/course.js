@@ -8,15 +8,11 @@ import { ErrorResponse } from '../utils/errorResponse.js';
 // @route     GET /api/v1/bootcamps/:bootcampId/courses
 // @access    Public
 const getCourses = asyncHandler(async (req, res) => {
-  const courses = await Course.find({
+  await Course.find({
     ...(req.params.bootcampId && { bootcamp: req.params.bootcampId }),
-  }).populate({ path: 'bootcamp', select: 'name description' });
-
-  res.status(200).json({
-    success: true,
-    count: courses.length,
-    data: courses,
   });
+
+  res.status(200).json(res.advancedResults);
 });
 
 // @desc      Get single course
