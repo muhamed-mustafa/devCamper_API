@@ -5,6 +5,12 @@ import morgan from 'morgan';
 import { connectDB } from './config/db.js';
 import { mountRoutes } from './routes/index.js';
 import { errorHandler } from './middleware/error.js';
+import fileUpload from 'express-fileupload';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load env vars
 dotenv.config({ path: './src/config/config.env' });
@@ -14,6 +20,9 @@ connectDB();
 
 const app = express();
 app.use(express.json());
+app.use(fileUpload());
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));

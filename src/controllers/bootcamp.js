@@ -179,6 +179,28 @@ const getSingleBootCamp = async (id) => {
   return bootCamp;
 };
 
+// @desc      Upload photo for bootcamp
+// @route     PUT /api/v1/bootcamps/:id/photo
+// @access    Private
+const bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
+  const bootcamp = await BootCamp.findById(req.params.id);
+
+  if (!bootcamp) {
+    return next(
+      new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
+  }
+
+  await BootCamp.findByIdAndUpdate(req.params.id, {
+    $set: { photo: req.fileName },
+  });
+
+  res.status(200).json({
+    success: true,
+    data: req.fileName,
+  });
+});
+
 export {
   getBootCamps,
   getBootCamp,
@@ -187,4 +209,5 @@ export {
   deleteBootCamp,
   getBootcampsInRadius,
   getSingleBootCamp,
+  bootcampPhotoUpload,
 };

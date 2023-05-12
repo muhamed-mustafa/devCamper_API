@@ -1,3 +1,4 @@
 node_modules
 .DS_Store
 src/config/config.env
+src/public/uploads
