@@ -15,14 +15,7 @@ const getBootCamps = asyncHandler(async (_req, res) => {
 // @access    Public
 const getBootCamp = asyncHandler(async (req, res, next) => {
   let { id } = req.params;
-  const bootCamp = await BootCamp.findById(id);
-
-  if (!bootCamp) {
-    return next(
-      new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
-    );
-  }
-
+  const bootCamp = await getSingleBootCamp(id);
   res.status(200).json({ success: true, data: bootCamp });
 });
 
@@ -39,17 +32,12 @@ const createBootCamp = asyncHandler(async (req, res) => {
 // @access    Private
 const updateBootCamp = asyncHandler(async (req, res, next) => {
   let { id } = req.params;
+  let bootCamp = await getSingleBootCamp(id);
 
-  const bootCamp = await BootCamp.findByIdAndUpdate(id, req.body, {
+  bootCamp = await BootCamp.findByIdAndUpdate(id, req.body, {
     new: true,
     runValidators: true,
   });
-
-  if (!bootCamp) {
-    return next(
-      new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
-    );
-  }
 
   res.status(200).json({ success: true, data: bootCamp });
 });
@@ -59,17 +47,8 @@ const updateBootCamp = asyncHandler(async (req, res, next) => {
 // @access    Private
 const deleteBootCamp = asyncHandler(async (req, res, next) => {
   let { id } = req.params;
-
-  const bootCamp = await BootCamp.findById(id);
-
-  if (!bootCamp) {
-    return next(
-      new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
-    );
-  }
-
+  const bootCamp = await getSingleBootCamp(id);
   await bootCamp.deleteOne();
-
   res.status(200).json({ success: true, data: {} });
 });
 
@@ -91,10 +70,27 @@ const getBootcampsInRadius = asyncHandler(async (req, res) => {
   const bootCamps = await BootCamp.find({
     location: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
   });
+
   res.status(200).json({
     success: true,
     count: bootCamps.length,
     data: bootCamps,
+  });
+});
+
+// @desc      Upload photo for bootcamp
+// @route     PUT /api/v1/bootcamps/:id/photo
+// @access    Private
+const bootcampPhotoUpload = asyncHandler(async (req, res) => {
+  await getSingleBootCamp(req.params.id);
+
+  await BootCamp.findByIdAndUpdate(req.params.id, {
+    $set: { photo: req.fileName },
+  });
+
+  res.status(200).json({
+    success: true,
+    data: req.fileName,
   });
 });
 
@@ -107,28 +103,6 @@ const getSingleBootCamp = async (id) => {
 
   return bootCamp;
 };
-
-// @desc      Upload photo for bootcamp
-// @route     PUT /api/v1/bootcamps/:id/photo
-// @access    Private
-const bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
-  const bootcamp = await BootCamp.findById(req.params.id);
-
-  if (!bootcamp) {
-    return next(
-      new ErrorResponse(`Bootcamp not found with id of ${req.params.id}`, 404)
-    );
-  }
-
-  await BootCamp.findByIdAndUpdate(req.params.id, {
-    $set: { photo: req.fileName },
-  });
-
-  res.status(200).json({
-    success: true,
-    data: req.fileName,
-  });
-});
 
 export {
   getBootCamps,
