@@ -8,6 +8,8 @@ import { errorHandler } from './middleware/error.js';
 import fileUpload from 'express-fileupload';
 import path from 'path';
 import { fileURLToPath } from 'url';
+4;
+import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +22,7 @@ connectDB();
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 app.use(fileUpload());
 
 app.use(express.static(path.join(__dirname, 'public')));
