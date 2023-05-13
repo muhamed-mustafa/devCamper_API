@@ -14,7 +14,9 @@
   "author": "Muhammed Mustafa",
   "license": "MIT",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "colors": "^1.4.0",
+    "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.3",
     "eslint": "^8.39.0",
     "eslint-config-airbnb": "^19.0.4",
@@ -27,6 +29,7 @@
     "express": "^4.18.2",
     "express-async-handler": "^1.2.0",
     "express-fileupload": "^1.4.0",
+    "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.1.0",
     "morgan": "^1.10.0",
     "node-geocoder": "^4.2.0",
