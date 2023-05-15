@@ -1,37 +1,45 @@
-import fs from 'fs';
-import { BootCamp } from './models/bootcamp.js';
-import { Course } from './models/course.js';
+import fs from 'fs/promises';
+import path from 'path';
 import colors from 'colors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
-import { fileURLToPath } from 'url';
-import path from 'path';
+import { BootCamp } from './models/bootcamp.js';
+import { Course } from './models/course.js';
+import { User } from './models/user.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.resolve();
 
 // Load env vars
-dotenv.config({ path: './src/config/config.env' });
+dotenv.config({ path: path.join(__dirname, 'config', 'config.env') });
 
 // Connect to database
 connectDB();
 
-const bootcamps = JSON.parse(
-  fs.readFileSync(`${__dirname}/_data/bootcamps.json`, 'utf8')
+const bootcampsFilePath = path.join(
+  __dirname,
+  'src',
+  '_data',
+  'bootcamps.json'
 );
-const courses = JSON.parse(
-  fs.readFileSync(`${__dirname}/_data/courses.json`, 'utf8')
-);
+const coursesFilePath = path.join(__dirname, 'src', '_data', 'courses.json');
+const usersFilePath = path.join(__dirname, 'src', '_data', 'users.json');
 
 // Import data into DB
 const importData = async () => {
   try {
+    const bootcamps = JSON.parse(await fs.readFile(bootcampsFilePath, 'utf8'));
+    const courses = JSON.parse(await fs.readFile(coursesFilePath, 'utf8'));
+    const users = JSON.parse(await fs.readFile(usersFilePath, 'utf8'));
+
     await BootCamp.create(bootcamps);
     await Course.create(courses);
+    await User.create(users);
+
     console.log('Data Imported...'.green.inverse);
     process.exit();
   } catch (error) {
-    console.error(err);
+    console.error(error);
+    process.exit(1);
   }
 };
 
@@ -40,10 +48,13 @@ const deleteData = async () => {
   try {
     await BootCamp.deleteMany();
     await Course.deleteMany();
+    await User.deleteMany();
+
     console.log('Data Destroyed...'.red.inverse);
     process.exit();
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
   }
 };
 

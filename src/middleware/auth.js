@@ -20,7 +20,15 @@ const protect = asyncHandler(async (req, _res, next) => {
 
     next();
   } catch (err) {
-    return next(new ErrorResponse('Not authorize to access this route', 401));
+    switch (err.constructor) {
+      case jwt.TokenExpiredError:
+        return next(new ErrorResponse('Token expired', 401));
+      case jwt.JsonWebTokenError:
+        return next(new ErrorResponse('Invalid token', 401));
+      default:
+        console.error(err);
+        return next(new ErrorResponse('Server error', 500));
+    }
   }
 });
 

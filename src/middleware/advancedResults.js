@@ -1,78 +1,67 @@
-export const advancedResults = (model, populate) => async (req, res, next) => {
-  let query;
+const parseQuery = (query) => {
+  const { select, sort, page = 1, limit = 25, ...rest } = query;
 
-  // Copy req.query
-  const reqQuery = { ...req.query };
-
-  // Fields to exclude
-  const removeFields = ['select', 'sort', 'page', 'limit'];
-
-  // Loop over removeFields and delete them from reqQuery
-  removeFields.forEach((param) => delete reqQuery[param]);
-
-  // Create query string
-  let queryStr = JSON.stringify(reqQuery);
-
-  // Create operators ($gt, $gte, etc)
-  queryStr = queryStr.replace(
+  const queryStr = JSON.stringify(rest).replace(
     /\b(gt|gte|lt|lte|in)\b/g,
     (match) => `$${match}`
   );
 
-  // Finding resource
-  query = model.find(JSON.parse(queryStr));
+  const fields = select ? select.split(',').join(' ') : '';
+  const sortBy = sort ? sort.split(',').join(' ') : '-createdAt';
 
-  // Select Fields
-  if (req.query.select) {
-    const fields = req.query.select.split(',').join(' ');
-    query = query.select(fields);
-  }
-
-  // Sort
-  if (req.query.sort) {
-    const sortBy = req.query.sort.split(',').join(' ');
-    query = query.sort(sortBy);
-  } else {
-    query = query.sort('-createdAt');
-  }
-
-  // Pagination
-  const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 25;
-  const startIndex = (page - 1) * limit;
-  const endIndex = page * limit;
-  const total = await model.countDocuments();
-
-  query = query.skip(startIndex).limit(limit);
-
-  if (populate) query.populate(populate);
-
-  // Executing query
-  const results = await query;
-
-  // Pagination result
-  const pagination = {};
-
-  if (endIndex < total) {
-    pagination.next = {
-      page: page + 1,
-      limit,
-    };
-  }
-
-  if (startIndex > 0) {
-    pagination.prev = {
-      page: page - 1,
-      limit,
-    };
-  }
-
-  res.advancedResults = {
-    success: true,
-    count: results.length,
-    pagination,
-    data: results,
+  return {
+    queryStr,
+    fields,
+    sortBy,
+    page: parseInt(page, 10),
+    limit: parseInt(limit, 10),
   };
+};
 
-  next();
+export const advancedResults = (model, populate) => async (req, res, next) => {
+  try {
+    const { query } = req;
+
+    const { queryStr, fields, sortBy, page, limit } = parseQuery(query);
+
+    const total = await model.countDocuments(JSON.parse(queryStr));
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    let queryObj = model.find(JSON.parse(queryStr)).select(fields).sort(sortBy);
+
+    if (populate) {
+      queryObj = queryObj.populate(populate);
+    }
+
+    const results = await queryObj.skip(startIndex).limit(limit);
+
+    const pagination = {};
+
+    if (endIndex < total) {
+      pagination.next = {
+        page: page + 1,
+        limit,
+      };
+    }
+
+    if (startIndex > 0) {
+      pagination.prev = {
+        page: page - 1,
+        limit,
+      };
+    }
+
+    res.advancedResults = {
+      success: true,
+      count: results.length,
+      pagination,
+      data: results,
+    };
+
+    next();
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
 };
