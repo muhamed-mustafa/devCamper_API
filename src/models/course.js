@@ -7,34 +7,42 @@ const courseSchema = new Schema(
       trim: true,
       required: [true, 'Please add a course title'],
     },
+
     description: {
       type: String,
       required: [true, 'Please add a description'],
     },
+
     weeks: {
       type: String,
       required: [true, 'Please add number of weeks'],
     },
+
     tuition: {
       type: Number,
       required: [true, 'Please add a tuition cost'],
     },
+
     minimumSkill: {
       type: String,
       required: [true, 'Please add a minimum skill'],
       enum: ['beginner', 'intermediate', 'advanced'],
     },
+
     scholarshipAvailable: {
       type: Boolean,
       default: false,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
+
     bootcamp: {
       type: Schema.Types.ObjectId,
       ref: 'BootCamp',
+      required: true,
+    },
+
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
     },
   },
@@ -52,6 +60,7 @@ const courseSchema = new Schema(
 courseSchema.statics.getAverageCost = async function (bootcampId) {
   const obj = await this.aggregate([
     { $match: { bootcamp: bootcampId } },
+
     {
       $group: {
         _id: '$bootcamp',
@@ -60,9 +69,13 @@ courseSchema.statics.getAverageCost = async function (bootcampId) {
     },
   ]);
 
+  const averageCost = obj[0]
+    ? Math.ceil(obj[0].averageCost / 10) * 10
+    : undefined;
+
   try {
     await this.model('BootCamp').findByIdAndUpdate(bootcampId, {
-      averageCost: Math.ceil(obj[0].averageCost / 10) * 10,
+      averageCost,
     });
   } catch (err) {
     console.error(err);
@@ -77,6 +90,13 @@ courseSchema.post('save', { document: true }, function () {
 // Call getAverageCost before remove
 courseSchema.post('deleteOne', { document: true }, function () {
   this.constructor.getAverageCost(this.bootcamp);
+});
+
+// Call getAverageCost after tuition update
+courseSchema.post('findOneAndUpdate', async function (doc) {
+  if (this.tuition !== doc.tuition) {
+    await doc.constructor.getAverageCost(doc.bootcamp);
+  }
 });
 
 export const Course = model('Course', courseSchema);

@@ -2,20 +2,20 @@ import colors from 'colors';
 import express from 'express';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
-import { connectDB } from './config/db.js';
-import { mountRoutes } from './routes/index.js';
-import { errorHandler } from './middleware/error.js';
 import fileUpload from 'express-fileupload';
 import path from 'path';
 import { fileURLToPath } from 'url';
-4;
+import { connectDB } from './config/db.js';
+import { mountRoutes } from './routes/index.js';
+import { errorHandler } from './middleware/error.js';
+
 import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load env vars
-dotenv.config({ path: './src/config/config.env' });
+dotenv.config({ path: path.join(__dirname, 'config', 'config.env') });
 
 // Connect to database
 connectDB();
@@ -24,7 +24,6 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(fileUpload());
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 if (process.env.NODE_ENV === 'development') {
@@ -33,21 +32,20 @@ if (process.env.NODE_ENV === 'development') {
 
 // Mount Routes
 mountRoutes(app);
+
+// Error handling middleware
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-const server = app.listen(
-  PORT,
+const server = app.listen(PORT, () => {
   console.log(
     `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`.yellow.bold
-  )
-);
+  );
+});
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
-  console.log(`Error: ${err.message}`.red);
-
-  // Close server & exit process
+  console.error(`Error: ${err.message}.red`);
   server.close(() => process.exit(1));
 });

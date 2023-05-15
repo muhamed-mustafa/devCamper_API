@@ -2,6 +2,7 @@ import asyncHandler from 'express-async-handler';
 import { BootCamp } from '../models/bootcamp.js';
 import { ErrorResponse } from '../utils/errorResponse.js';
 import { geocoder } from '../utils/geocoder.js';
+import slugify from 'slugify';
 
 // @desc      Get all bootCamps
 // @route     GET /api/v1/bootCamps
@@ -23,7 +24,18 @@ const getBootCamp = asyncHandler(async (req, res, next) => {
 // @route     POST /api/v1/bootCamps
 // @access    Private
 const createBootCamp = asyncHandler(async (req, res) => {
-  const bootCamp = await BootCamp.create(req.body);
+  const publishedBootcamp = await BootCamp.findOne({ user: req.user.id });
+
+  if (publishedBootcamp && req.user.role !== 'admin') {
+    return next(
+      new ErrorResponse(
+        `The user with ID ${req.user.id} has already published a bootcamp`,
+        400
+      )
+    );
+  }
+
+  const bootCamp = await BootCamp.create({ ...req.body, user: req.user.id });
   res.status(201).json({ success: true, data: bootCamp });
 });
 
@@ -33,6 +45,22 @@ const createBootCamp = asyncHandler(async (req, res) => {
 const updateBootCamp = asyncHandler(async (req, res, next) => {
   let { id } = req.params;
   let bootCamp = await getSingleBootCamp(id);
+
+  if (
+    bootCamp.user.toString() !== req.user.id.toString() &&
+    req.user.role !== 'admin'
+  ) {
+    return next(
+      new ErrorResponse(
+        `User ${req.params.id} is not authorized to update this bootcamp`,
+        401
+      )
+    );
+  }
+
+  if (Object.keys(req.body).includes('name')) {
+    req.body.slug = slugify(req.body.name, { lower: true });
+  }
 
   bootCamp = await BootCamp.findByIdAndUpdate(id, req.body, {
     new: true,
@@ -47,7 +75,21 @@ const updateBootCamp = asyncHandler(async (req, res, next) => {
 // @access    Private
 const deleteBootCamp = asyncHandler(async (req, res, next) => {
   let { id } = req.params;
+
   const bootCamp = await getSingleBootCamp(id);
+
+  if (
+    bootCamp.user.toString() !== req.user.id.toString() &&
+    req.user.role !== 'admin'
+  ) {
+    return next(
+      new ErrorResponse(
+        `User ${req.params.id} is not authorized to update this bootcamp`,
+        401
+      )
+    );
+  }
+
   await bootCamp.deleteOne();
   res.status(200).json({ success: true, data: {} });
 });
@@ -82,7 +124,19 @@ const getBootcampsInRadius = asyncHandler(async (req, res) => {
 // @route     PUT /api/v1/bootcamps/:id/photo
 // @access    Private
 const bootcampPhotoUpload = asyncHandler(async (req, res) => {
-  await getSingleBootCamp(req.params.id);
+  let bootCamp = await getSingleBootCamp(req.params.id);
+
+  if (
+    bootCamp.user.toString() !== req.user.id.toString() &&
+    req.user.role !== 'admin'
+  ) {
+    return next(
+      new ErrorResponse(
+        `User ${req.params.id} is not authorized to update this bootcamp`,
+        401
+      )
+    );
+  }
 
   await BootCamp.findByIdAndUpdate(req.params.id, {
     $set: { photo: req.fileName },
