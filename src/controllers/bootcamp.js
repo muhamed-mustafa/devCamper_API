@@ -52,7 +52,7 @@ const updateBootCamp = asyncHandler(async (req, res, next) => {
   ) {
     return next(
       new ErrorResponse(
-        `User ${req.params.id} is not authorized to update this bootcamp`,
+        `User ${req.user.id} is not authorized to update this bootcamp`,
         401
       )
     );
@@ -84,7 +84,7 @@ const deleteBootCamp = asyncHandler(async (req, res, next) => {
   ) {
     return next(
       new ErrorResponse(
-        `User ${req.params.id} is not authorized to update this bootcamp`,
+        `User ${req.user.id} is not authorized to update this bootcamp`,
         401
       )
     );
@@ -132,7 +132,7 @@ const bootcampPhotoUpload = asyncHandler(async (req, res) => {
   ) {
     return next(
       new ErrorResponse(
-        `User ${req.params.id} is not authorized to update this bootcamp`,
+        `User ${req.user.id} is not authorized to update this bootcamp`,
         401
       )
     );
