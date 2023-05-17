@@ -3,13 +3,19 @@ import express from 'express';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import fileUpload from 'express-fileupload';
+import cookieParser from 'cookie-parser';
 import path from 'path';
+import mongoSanitize from 'express-mongo-sanitize';
+import helmet from 'helmet';
+import xss from 'xss-clean';
+import rateLimit from 'express-rate-limit';
+import hpp from 'hpp';
+import cors from 'cors';
+
 import { fileURLToPath } from 'url';
 import { connectDB } from './config/db.js';
 import { mountRoutes } from './routes/index.js';
 import { errorHandler } from './middleware/error.js';
-
-import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,10 +27,24 @@ dotenv.config({ path: path.join(__dirname, 'config', 'config.env') });
 connectDB();
 
 const app = express();
-app.use(express.json());
-app.use(cookieParser());
-app.use(fileUpload());
-app.use(express.static(path.join(__dirname, 'public')));
+
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 mins
+  max: 100,
+});
+
+app.use([
+  express.json(),
+  cookieParser(),
+  fileUpload(),
+  express.static(path.join(__dirname, 'public')),
+  mongoSanitize(),
+  helmet(),
+  xss(),
+  hpp(),
+  cors(),
+  limiter,
+]);
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
