@@ -156,6 +156,7 @@ BootCampSchema.pre('save', async function (next) {
 BootCampSchema.pre('deleteOne', { document: true }, async function (next) {
   console.log(`Courses being deleted from bootcamp ${this._id}`);
   await this.model('Course').deleteMany({ bootcamp: this._id });
+  await this.model('Review').deleteMany({ bootcamp: this._id });
   next();
 });
 

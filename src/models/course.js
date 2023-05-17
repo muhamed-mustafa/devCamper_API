@@ -83,13 +83,13 @@ courseSchema.statics.getAverageCost = async function (bootcampId) {
 };
 
 // Call getAverageCost after save
-courseSchema.post('save', { document: true }, function () {
-  this.constructor.getAverageCost(this.bootcamp);
+courseSchema.post('save', { document: true }, async function () {
+  await this.constructor.getAverageCost(this.bootcamp);
 });
 
 // Call getAverageCost before remove
-courseSchema.post('deleteOne', { document: true }, function () {
-  this.constructor.getAverageCost(this.bootcamp);
+courseSchema.post('deleteOne', { document: true }, async function () {
+  await this.constructor.getAverageCost(this.bootcamp);
 });
 
 // Call getAverageCost after tuition update

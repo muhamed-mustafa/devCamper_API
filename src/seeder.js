@@ -6,6 +6,7 @@ import { connectDB } from './config/db.js';
 import { BootCamp } from './models/bootcamp.js';
 import { Course } from './models/course.js';
 import { User } from './models/user.js';
+import { Review } from './models/review.js';
 
 const __dirname = path.resolve();
 
@@ -23,6 +24,7 @@ const bootcampsFilePath = path.join(
 );
 const coursesFilePath = path.join(__dirname, 'src', '_data', 'courses.json');
 const usersFilePath = path.join(__dirname, 'src', '_data', 'users.json');
+const reviewsFilePath = path.join(__dirname, 'src', '_data', 'reviews.json');
 
 // Import data into DB
 const importData = async () => {
@@ -30,10 +32,12 @@ const importData = async () => {
     const bootcamps = JSON.parse(await fs.readFile(bootcampsFilePath, 'utf8'));
     const courses = JSON.parse(await fs.readFile(coursesFilePath, 'utf8'));
     const users = JSON.parse(await fs.readFile(usersFilePath, 'utf8'));
+    const reviews = JSON.parse(await fs.readFile(reviewsFilePath,  'utf8'));
 
     await BootCamp.create(bootcamps);
     await Course.create(courses);
     await User.create(users);
+    await Review.create(reviews);
 
     console.log('Data Imported...'.green.inverse);
     process.exit();
@@ -49,6 +53,7 @@ const deleteData = async () => {
     await BootCamp.deleteMany();
     await Course.deleteMany();
     await User.deleteMany();
+    await Review.deleteMany();
 
     console.log('Data Destroyed...'.red.inverse);
     process.exit();
