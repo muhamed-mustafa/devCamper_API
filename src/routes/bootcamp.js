@@ -9,6 +9,7 @@ import {
   bootcampPhotoUpload,
 } from '../controllers/bootcamp.js';
 import { courseRoute } from './course.js';
+import { reviewRoute } from './review.js';
 import { uploadFile } from '../middleware/file-upload.js';
 import { advancedResults } from '../middleware/advancedResults.js';
 import { BootCamp } from '../models/bootcamp.js';
@@ -18,6 +19,7 @@ const router = Router();
 
 // Re-route into other resource routers
 router.use('/:bootcampId/courses', courseRoute);
+router.use('/:bootcampId/reviews', reviewRoute);
 
 router
   .route('/:id/photo')

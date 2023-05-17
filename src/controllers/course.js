@@ -8,9 +8,17 @@ import { ErrorResponse } from '../utils/errorResponse.js';
 // @route     GET /api/v1/bootcamps/:bootcampId/courses
 // @access    Public
 const getCourses = asyncHandler(async (req, res) => {
-  await Course.find({
+  let { bootcampId } = req.params;
+
+  const courses = await Course.find({
     ...(req.params.bootcampId && { bootcamp: req.params.bootcampId }),
   });
+
+  if (bootcampId)
+    return res
+      .status(200)
+      .json({ success: true, count: courses.length, data: courses });
+
   res.status(200).json(res.advancedResults);
 });
 
@@ -71,6 +79,8 @@ const updateCourse = asyncHandler(async (req, res) => {
     new: true,
     runValidators: true,
   });
+
+  await course.save();
 
   res.status(200).json({ success: true, data: course });
 });
